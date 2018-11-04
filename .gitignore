@@ -1,0 +1,6 @@
+# ignore intellij files
+.idea/
+
+*.pyc
+
+*.ini
