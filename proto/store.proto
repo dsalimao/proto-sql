@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package proto;
+
+message Store {
+    int64 id = 1;
+
+    string name = 2;
+
+    string description = 3;
+
+    enum StoreType {
+        UNKNOWN = 0;
+        GROCERY = 1;
+        OUTDOOR = 2;
+        COSMETICS = 3;
+        CLOTH = 4;
+    }
+
+    StoreType store_type = 4;
+
+    string web_url = 5;
+}

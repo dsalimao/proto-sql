@@ -16,8 +16,3 @@ TYPE_SFIXED32 = 15
 TYPE_SFIXED64 = 16
 TYPE_SINT32 = 17
 TYPE_SINT64 = 18
-
-TYPE = {
-    3: 'long',
-    9: 'text',
-}

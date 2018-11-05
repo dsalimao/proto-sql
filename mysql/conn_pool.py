@@ -19,7 +19,7 @@ class ConnectionPool:
                                db=config.mysql_db,
                                charset='utf8mb4',
                                cursorclass=pymysql.cursors.DictCursor)
-        conn.autocommit(True)
+        conn.autocommit(False)
         return conn
 
     def _put(self, conn):
@@ -32,7 +32,7 @@ class ConnectionPool:
 
         return conn
 
-    def execute(self, sql, args=None, exec_many=False, return_one=False):
+    def execute(self, sql, args=None, exec_many=False, return_one=False, write=False):
         """
         execute
         :param sql: sql
@@ -42,18 +42,26 @@ class ConnectionPool:
         """
         conn = self._get()
         try:
-            with conn as cur:
+            with conn.cursor() as cursor:
                 if exec_many:
-                    cur.executemany(sql, args)
+                    cursor.executemany(sql, args)
                 else:
-                    cur.execute(sql, args)
-                return cur.fetchone() if return_one else cur.fetchall()
-
+                    cursor.execute(sql, args)
+                if not write:
+                    return cursor.fetchone() if return_one else cursor.fetchall()
+            conn.commit()
         except Exception as e:
             raise e
 
         finally:
             self._queue.put(conn)
+
+    def start_manual(self):
+        conn = self._get()
+        return conn
+
+    def end_manual(self, conn):
+        self._queue.put(conn)
 
     def __del__(self):
         while not self._queue.empty():

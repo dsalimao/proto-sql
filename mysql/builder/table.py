@@ -11,6 +11,10 @@ class CreateTable:
         builder += ", ".join(field_strs)
         builder += ");"
 
+        print(builder)
         return builder
+
+    def execute(self, cursor):
+        cursor.execute(self.__str__())
 
 

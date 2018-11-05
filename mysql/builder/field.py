@@ -17,9 +17,11 @@ class IntegerField(Field):
         super().__init__(name, **kwargs)
 
     def __str__(self):
-        builder = self.name() + " INT NOT NULL DEFAULT 0"
+        builder = self.name() + " INT NOT NULL"
         if self.is_id():
-            builder += " PRIMARY KEY AUTOINCREMENT"
+            builder += " PRIMARY KEY AUTO_INCREMENT"
+        else:
+            builder += " DEFAULT 0"
         return builder
 
 
@@ -28,9 +30,11 @@ class LongField(Field):
         super().__init__(name, **kwargs)
 
     def __str__(self):
-        builder = self.name() + " BIGINT NOT NULL DEFAULT 0"
+        builder = self.name() + " BIGINT NOT NULL"
         if self.is_id():
-            builder += " PRIMARY KEY AUTOINCREMENT"
+            builder += " PRIMARY KEY AUTO_INCREMENT"
+        else:
+            builder += " DEFAULT 0"
         return builder
 
 
@@ -58,5 +62,14 @@ class TextField(Field):
         super().__init__(name, **kwargs)
 
     def __str__(self):
-        builder = "{0} TEXT NOT NULL DEFAULT \"\"".format(self.name())
+        builder = "{0} TEXT".format(self.name())
+        return builder
+
+
+class EnumField(Field):
+    def __init__(self, name, **kwargs):
+        super().__init__(name, **kwargs)
+
+    def __str__(self):
+        builder = self.name() + " INT NOT NULL DEFAULT 0"
         return builder

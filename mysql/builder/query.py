@@ -12,9 +12,9 @@ class Query:
 
     def __str__(self):
         selects = ", ".join(self._selects)
-        from_ = self._from
-        where = self._where_clause
-        builder = 'SELECT {0} FROM {1} WHERE {2};'.format(selects, from_, where)
+        builder = 'SELECT {0} FROM {1} WHERE {2};'.format(selects, self._from, self._where_clause)
+
+        print(builder)
         return builder
 
 
@@ -34,4 +34,6 @@ class Insert:
             values.append(str(self._dic[column]))
 
         builder = 'INSERT INTO {0} ({1}) VALUES ({2});'.format(self._table, ", ".join(columns), ", ".join(values))
+
+        print(builder)
         return builder
