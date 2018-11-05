@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='item.proto',
   package='proto',
   syntax='proto3',
-  serialized_pb=_b('\n\nitem.proto\x12\x05proto\"[\n\x04Item\x12\n\n\x02id\x18\x01 \x01(\x03\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t\x12\x12\n\nunit_price\x18\x04 \x01(\x03\x12\x10\n\x08quantity\x18\x05 \x01(\x03\x62\x06proto3')
+  serialized_pb=_b('\n\nitem.proto\x12\x05proto\"q\n\x04Item\x12\n\n\x02id\x18\x01 \x01(\x03\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t\x12\x12\n\nunit_price\x18\x04 \x01(\x03\x12\x10\n\x08quantity\x18\x05 \x01(\x03\x12\x14\n\x0c\x63reated_time\x18\x0b \x01(\x03\x62\x06proto3')
 )
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -68,6 +68,13 @@ _ITEM = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
+    _descriptor.FieldDescriptor(
+      name='created_time', full_name='proto.Item.created_time', index=5,
+      number=11, type=3, cpp_type=2, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
   ],
   extensions=[
   ],
@@ -81,7 +88,7 @@ _ITEM = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=21,
-  serialized_end=112,
+  serialized_end=134,
 )
 
 DESCRIPTOR.message_types_by_name['Item'] = _ITEM

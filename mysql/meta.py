@@ -15,12 +15,12 @@ def _init_meta():
 
 def _get_table_meta(table):
     rows = mysql_pool.execute('''
-    SELECT * FROM proto_table_meta WHERE table_name = (%s)
+    SELECT * FROM proto_table_meta WHERE table_name = %s
     ''', (table,), return_one=False)
 
     colums = []
     for row in rows:
-        colums.append({'db_column': row['db_column'], 'name': row['py_column'], 'type': row['type']})
+        colums.append({'db_column': row['db_column'], 'py_column': row['py_column'], 'type': row['type']})
 
     return colums
 
@@ -32,7 +32,7 @@ def _replace_table_meta(table, columns, cursor=None):
                     ''', (table, ))
         for column in columns:
             cursor.execute('''
-                    REPLACE INTO proto_table_meta (table_name, db_column, py_column, type) VALUES ("%s", "%s", "%s", %s)
+                    REPLACE INTO proto_table_meta (table_name, db_column, py_column, type) VALUES (%s, %s, %s, %s)
                     ''', (table, column['db_column'], column['py_column'], column['type']))
 
     if cursor:
@@ -48,7 +48,3 @@ def _replace_table_meta(table, columns, cursor=None):
             raise e
         finally:
             mysql_pool.end_manual(conn)
-
-
-
-

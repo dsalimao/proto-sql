@@ -1,7 +1,7 @@
 from proto.item_pb2 import Item
 from proto.store_pb2 import Store
 from google.protobuf.message import Message
-from mysql.builder.table import CreateTable
+from mysql.builder.table import CreateTable, AlterTable
 from mysql.builder import field as field_
 from google.protobuf.internal.python_message import GeneratedProtocolMessageType
 from mysql.common import _get_table_name, _to_meta
@@ -24,6 +24,8 @@ def migrate(message):
     new_table_metadata = _to_meta(message)
 
     conn = mysql_pool.start_manual()
+    print(old_table_metadata)
+    print(new_table_metadata)
     if not old_table_metadata:
         # Doesn't exist, create the table, and update in meta table.
         try:
@@ -36,17 +38,18 @@ def migrate(message):
         finally:
             mysql_pool.end_manual(conn)
     else:
-        # TODO
         # Already exist, alter the table, and update in meta table.
-        try:
-            with conn.cursor() as cursor:
-                _replace_table_meta(table_name, new_table_metadata, cursor)
-                _create_table(message).execute(cursor)
-            conn.commit()
-        except Exception as e:
-            raise e
-        finally:
-            mysql_pool.end_manual(conn)
+        alter_table = _alter_table(message, old_table_metadata, new_table_metadata)
+        if alter_table:
+            try:
+                with conn.cursor() as cursor:
+                    _replace_table_meta(table_name, new_table_metadata, cursor)
+                    alter_table.execute(cursor)
+                conn.commit()
+            except Exception as e:
+                raise e
+            finally:
+                mysql_pool.end_manual(conn)
 
 
 def _create_table(message: GeneratedProtocolMessageType):
@@ -69,4 +72,30 @@ def _create_table(message: GeneratedProtocolMessageType):
     return CreateTable(table_name, fields)
 
 
-migrate(Store)
+def _alter_table(message: GeneratedProtocolMessageType, old_table_metadata, new_table_metadata):
+    table_name = _get_table_name(message)
+
+    old_dict = {}
+    for col in old_table_metadata:
+        old_dict[col['db_column']] = col
+
+    new_dict = {}
+    for col in new_table_metadata:
+        new_dict[col['db_column']] = col
+
+    alter = AlterTable(table_name)
+    altered = False
+
+    # TODO: support delete column, alter column
+    for key in new_dict:
+        if key not in old_dict:
+            # Find new field in proto, need to add new column in table
+            add_field = TYPE[new_dict[key]['type']](new_dict[key]['db_column'])
+            alter.add_column(add_field)
+            altered = True
+
+    if altered:
+        return alter
+    return None
+
+migrate(Item)
