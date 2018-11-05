@@ -22,16 +22,24 @@ class AlterTable:
     def __init__(self, name):
         self._name = name
         self._add_col = []
+        self._del_col = []
 
     def add_column(self, field):
         self._add_col.append(field)
         return self
 
+    def delete_column(self, col_name):
+        self._del_col.append(col_name)
+        return self
+
     def __str__(self):
-        builder = 'ALTER TABLE {0} '.format(self._name)
+        builder = 'ALTER TABLE {0}'.format(self._name)
 
         for field in self._add_col:
-            builder += "ADD COLUMN {0},".format(str(field))
+            builder += " ADD COLUMN {0},".format(str(field))
+
+        for field in self._del_col:
+            builder += " DROP COLUMN {0},".format(field)
 
         if builder[-1] == ",":
             builder = builder[:-1]

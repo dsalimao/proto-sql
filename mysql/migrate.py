@@ -86,12 +86,21 @@ def _alter_table(message: GeneratedProtocolMessageType, old_table_metadata, new_
     alter = AlterTable(table_name)
     altered = False
 
-    # TODO: support delete column, alter column
     for key in new_dict:
         if key not in old_dict:
             # Find new field in proto, need to add new column in table
             add_field = TYPE[new_dict[key]['type']](new_dict[key]['db_column'])
             alter.add_column(add_field)
+            altered = True
+        else:
+            if new_dict[key]['type'] != old_dict[key]['type']:
+                raise Exception("Should not modify the type of field number %s".format(key[1:]))
+            elif new_dict[key]['py_column'] != old_dict[key]['py_column']:
+                altered = True
+
+    for key in old_dict:
+        if key not in new_dict:
+            alter.delete_column(key)
             altered = True
 
     if altered:
