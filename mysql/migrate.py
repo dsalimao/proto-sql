@@ -8,7 +8,6 @@ from mysql.common import _get_table_name, _to_meta
 from mysql.meta import _init_meta, _get_table_meta, _replace_table_meta
 from mysql.conn_pool import mysql_pool
 
-
 TYPE = {
     3: field_.LongField,
     5: field_.IntegerField,
@@ -60,12 +59,12 @@ def _create_table(message: GeneratedProtocolMessageType):
     for field in list(message.DESCRIPTOR.fields):
         if field.name == 'id':
             if field.type == 3 or field.type == 5:
-                fields.append(TYPE[field.type]("c"+str(field.number), is_id=True))
+                fields.append(TYPE[field.type]("c" + str(field.number), is_id=True))
                 has_id = True
             else:
                 raise Exception("id must be int32 or int64")
         else:
-            fields.append(TYPE[field.type]("c"+str(field.number)))
+            fields.append(TYPE[field.type]("c" + str(field.number)))
     if not has_id:
         raise Exception("message must have int32 or int64 typed `id` field as primary key.")
 
@@ -107,12 +106,12 @@ def _alter_table(message: GeneratedProtocolMessageType, old_table_metadata, new_
         return alter
     return None
 
+
 migrate(Item)
 
-ali=Item()
+ali = Item()
 ali.id = 725
-ali.name="ali"
+ali.name = "ali"
 ali.quantity = 1
 
 yihan = Item()
-
