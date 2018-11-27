@@ -108,3 +108,11 @@ def _alter_table(message: GeneratedProtocolMessageType, old_table_metadata, new_
     return None
 
 migrate(Item)
+
+ali=Item()
+ali.id = 725
+ali.name="ali"
+ali.quantity = 1
+
+yihan = Item()
+
