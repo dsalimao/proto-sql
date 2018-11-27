@@ -1,16 +1,30 @@
 from google.protobuf.internal.python_message import GeneratedProtocolMessageType
 from google.protobuf.message import Message
+from google.protobuf.descriptor import Descriptor
 
 
-def _get_table_name(message: GeneratedProtocolMessageType):
+def _get_table_names(message: GeneratedProtocolMessageType):
     """
     Gets the table name in mysql based on Proto Message
     :param message
     """
-    return message.DESCRIPTOR.full_name.replace(".", "_").lower()
+    base_name = message.DESCRIPTOR.full_name.replace(".", "_").lower()
+    res = {base_name: message.DESCRIPTOR}
+    for field in message.DESCRIPTOR.fields:
+        if field.type == 11: # message field
+            res.update(_get_table_names_by_descriptor(field.message_type, prefix=base_name+"_c"+str(field.number)))
+    return res
 
 
-def _to_meta(message: GeneratedProtocolMessageType):
+def _get_table_names_by_descriptor(descriptor: Descriptor, prefix=''):
+    res = {prefix: descriptor}
+    for field in descriptor.fields:
+        if field.type == 11: # message field
+            res.update(_get_table_names_by_descriptor(field.message_type, prefix=prefix+"_c"+str(field.number)))
+    return res
+
+
+def _to_meta(descriptor: Descriptor):
     """
     Builds the db table metadata for a Proto Message
     :param message
@@ -18,10 +32,11 @@ def _to_meta(message: GeneratedProtocolMessageType):
     """
     columns = []
 
-    fields = list(message.DESCRIPTOR.fields)
+    fields = list(descriptor.fields)
     for field in fields:
-        column = {'db_column': "c" + str(field.number), 'py_column': field.name, 'type': field.type}
-        columns.append(column)
+        if field.type != 11:
+            column = {'db_column': "c" + str(field.number), 'py_column': field.name, 'type': field.type}
+            columns.append(column)
     return columns
 
 

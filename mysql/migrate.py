@@ -1,12 +1,12 @@
 from proto.item_pb2 import Item
 from proto.store_pb2 import Store
-from google.protobuf.message import Message
+from proto.receipts_pb2 import Receipts
 from mysql.builder.table import CreateTable, AlterTable
 from mysql.builder import field as field_
-from google.protobuf.internal.python_message import GeneratedProtocolMessageType
-from mysql.common import _get_table_name, _to_meta
+from mysql.common import _get_table_names, _to_meta
 from mysql.meta import _init_meta, _get_table_meta, _replace_table_meta
 from mysql.conn_pool import mysql_pool
+from google.protobuf.descriptor import Descriptor
 
 TYPE = {
     3: field_.LongField,
@@ -18,45 +18,44 @@ TYPE = {
 
 def migrate(message):
     _init_meta()
-    table_name = _get_table_name(message)
-    old_table_metadata = _get_table_meta(table_name)
-    new_table_metadata = _to_meta(message)
+    table_names = _get_table_names(message)
+    for table_name in table_names:
+        old_table_metadata = _get_table_meta(table_name)
+        new_table_metadata = _to_meta(table_names[table_name])
 
-    conn = mysql_pool.start_manual()
-    print(old_table_metadata)
-    print(new_table_metadata)
-    if not old_table_metadata:
-        # Doesn't exist, create the table, and update in meta table.
-        try:
-            with conn.cursor() as cursor:
-                _replace_table_meta(table_name, new_table_metadata, cursor)
-                _create_table(message).execute(cursor)
-            conn.commit()
-        except Exception as e:
-            raise e
-        finally:
-            mysql_pool.end_manual(conn)
-    else:
-        # Already exist, alter the table, and update in meta table.
-        alter_table = _alter_table(message, old_table_metadata, new_table_metadata)
-        if alter_table:
+        conn = mysql_pool.start_manual()
+        print(old_table_metadata)
+        print(new_table_metadata)
+        if not old_table_metadata:
+            # Doesn't exist, create the table, and update in meta table.
             try:
                 with conn.cursor() as cursor:
                     _replace_table_meta(table_name, new_table_metadata, cursor)
-                    alter_table.execute(cursor)
-                conn.commit()
+                    _create_table(table_name, table_names[table_name]).execute(cursor)
+                # conn.commit()
             except Exception as e:
                 raise e
             finally:
                 mysql_pool.end_manual(conn)
+        else:
+            # Already exist, alter the table, and update in meta table.
+            alter_table = _alter_table(table_name, old_table_metadata, new_table_metadata)
+            if alter_table:
+                try:
+                    with conn.cursor() as cursor:
+                        _replace_table_meta(table_name, new_table_metadata, cursor)
+                        alter_table.execute(cursor)
+                    # conn.commit()
+                except Exception as e:
+                    raise e
+                finally:
+                    mysql_pool.end_manual(conn)
 
 
-def _create_table(message: GeneratedProtocolMessageType):
-    table_name = _get_table_name(message)
-
+def _create_table(table_name, descriptor: Descriptor):
     has_id = False
     fields = []
-    for field in list(message.DESCRIPTOR.fields):
+    for field in list(descriptor.fields):
         if field.name == 'id':
             if field.type == 3 or field.type == 5:
                 fields.append(TYPE[field.type]("c" + str(field.number), is_id=True))
@@ -64,16 +63,15 @@ def _create_table(message: GeneratedProtocolMessageType):
             else:
                 raise Exception("id must be int32 or int64")
         else:
-            fields.append(TYPE[field.type]("c" + str(field.number)))
+            if field.type != 11:
+                fields.append(TYPE[field.type]("c" + str(field.number)))
     if not has_id:
         raise Exception("message must have int32 or int64 typed `id` field as primary key.")
 
     return CreateTable(table_name, fields)
 
 
-def _alter_table(message: GeneratedProtocolMessageType, old_table_metadata, new_table_metadata):
-    table_name = _get_table_name(message)
-
+def _alter_table(table_name, old_table_metadata, new_table_metadata):
     old_dict = {}
     for col in old_table_metadata:
         old_dict[col['db_column']] = col
@@ -107,11 +105,5 @@ def _alter_table(message: GeneratedProtocolMessageType, old_table_metadata, new_
     return None
 
 
-migrate(Item)
-
-ali = Item()
-ali.id = 725
-ali.name = "ali"
-ali.quantity = 1
-
-yihan = Item()
+migrate(Receipts)
+# migrate(Store)

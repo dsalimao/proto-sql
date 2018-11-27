@@ -2,7 +2,7 @@ from proto.item_pb2 import Item
 from proto.store_pb2 import Store
 from mysql.builder.query import Query, Insert
 from google.protobuf.internal.python_message import GeneratedProtocolMessageType
-from mysql.common import _get_table_name, _to_value_dict, _to_proto
+from mysql.common import _get_table_names, _to_value_dict, _to_proto
 from mysql.conn_pool import mysql_pool
 
 # Operator and it's valid type
@@ -26,7 +26,7 @@ class Model:
                 self.id_column = "c" + str(field.number)
 
     def get(self, id):
-        q = Query().from_table(_get_table_name(self._m)).where("{0}={1}".format(self.id_column, id))
+        q = Query().from_table(_get_table_names(self._m)).where("{0}={1}".format(self.id_column, id))
         row = mysql_pool.execute(str(q), return_one=True)
         return _to_proto(self._m, row)
 
@@ -58,14 +58,14 @@ class Model:
                 raise ValueError('In operator only accept list')
             wheres.append('c' + str(self._fields[field][0]) + OP[op][0] + to_string(val, self._fields[field][1] == 9))
 
-        q = Query().from_table(_get_table_name(self._m)).where(' AND '.join(wheres))
+        q = Query().from_table(_get_table_names(self._m)).where(' AND '.join(wheres))
         rows = mysql_pool.execute(str(q), return_one=False)
 
         return [_to_proto(self._m, row) for row in rows]
 
     def insert(self, obj):
         _, _, values = _to_value_dict(self._m, obj)
-        q = Insert(values).into_table(_get_table_name(self._m))
+        q = Insert(values).into_table(_get_table_names(self._m))
         row = mysql_pool.execute(str(q), write=True)
         return row
 
