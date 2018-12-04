@@ -9,18 +9,22 @@ def _get_table_names(message: GeneratedProtocolMessageType):
     :param message
     """
     base_name = message.DESCRIPTOR.full_name.replace(".", "_").lower()
-    res = {base_name: message.DESCRIPTOR}
+    res = [(base_name, message.DESCRIPTOR, [])]
     for field in message.DESCRIPTOR.fields:
         if field.type == 11: # message field
-            res.update(_get_table_names_by_descriptor(field.message_type, prefix=base_name+"_c"+str(field.number)))
+            res.extend(_get_table_names_by_descriptor(field.message_type, prefix=base_name+"_c"+str(field.number),
+                                                      parents=[base_name]))
     return res
 
 
-def _get_table_names_by_descriptor(descriptor: Descriptor, prefix=''):
-    res = {prefix: descriptor}
+def _get_table_names_by_descriptor(descriptor: Descriptor, prefix='', parents=[]):
+    res = [(prefix, descriptor, parents)]
+    p=parents[:]
+    p.append(prefix)
     for field in descriptor.fields:
         if field.type == 11: # message field
-            res.update(_get_table_names_by_descriptor(field.message_type, prefix=prefix+"_c"+str(field.number)))
+            res.update(_get_table_names_by_descriptor(field.message_type, prefix=prefix+"_c"+str(field.number),
+                                                      parents=p))
     return res
 
 

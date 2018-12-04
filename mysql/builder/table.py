@@ -1,15 +1,28 @@
 class CreateTable:
-    def __init__(self, name, fields):
+    def __init__(self, name, fields, pk, constraint=None, interleave=None):
         self._name = name
         self._fields = fields
+        self._pk = pk
+        self._ct = constraint
+        self._il = interleave
 
     def __str__(self):
         builder = 'CREATE TABLE IF NOT EXISTS {0} ( '.format(self._name)
         field_strs = []
         for field in self._fields:
             field_strs.append(str(field))
+
+        field_strs.append(str(self._pk))
+
+        if self._ct:
+            field_strs.append(str(self._ct))
+
         builder += ", ".join(field_strs)
-        builder += ");"
+
+        if self._il:
+            builder += ") {0};".format(str(self._il))
+        else:
+            builder += ");"
 
         print(builder)
         return builder

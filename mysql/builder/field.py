@@ -19,7 +19,7 @@ class IntegerField(Field):
     def __str__(self):
         builder = self.name() + " INT NOT NULL"
         if self.is_id():
-            builder += " PRIMARY KEY AUTO_INCREMENT"
+            builder += " AUTO_INCREMENT"
         else:
             builder += " DEFAULT 0"
         return builder
@@ -32,7 +32,7 @@ class LongField(Field):
     def __str__(self):
         builder = self.name() + " BIGINT NOT NULL"
         if self.is_id():
-            builder += " PRIMARY KEY AUTO_INCREMENT"
+            builder += " AUTO_INCREMENT"
         else:
             builder += " DEFAULT 0"
         return builder
